@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Megatron-LM sibling of run_qwen2_5_7b_grpo.sh — same model, same dataset (GSM8K),
+# Megatron-LM sibling of qwen2_5_7b_fsdp.sh — same model, same dataset (GSM8K),
 # same wandb project, same H200 tuning. Wraps the upstream Megatron recipe
 # examples/grpo_trainer/run_qwen2-7b_math_megatron_fsdp.sh and overrides its small
 # default batches/lengths so it is APPLES-TO-APPLES with the FSDP launcher.
@@ -8,15 +8,20 @@
 # verl/__init__.py) — without it, Megatron's _set_attention_backend asserts when
 # verl builds the actor and ref with different attention backends.
 #
-# Usage:
-#   bash run_qwen2_5_7b_grpo_megatron.sh                          # smoke (5 steps)
-#   SMOKE_TEST=0 bash run_qwen2_5_7b_grpo_megatron.sh             # full 15-epoch run
-#   EXP_NAME=my_run bash run_qwen2_5_7b_grpo_megatron.sh          # custom wandb run name
-#   bash run_qwen2_5_7b_grpo_megatron.sh actor_rollout_ref.actor.optim.lr=5e-7   # extra overrides
+# Usage (run from anywhere — script cd's to verl/ root):
+#   bash launchers/qwen2_5_7b_megatron.sh                          # smoke (5 steps)
+#   SMOKE_TEST=0 bash launchers/qwen2_5_7b_megatron.sh             # full 15-epoch run
+#   EXP_NAME=my_run bash launchers/qwen2_5_7b_megatron.sh          # custom wandb run name
+#   bash launchers/qwen2_5_7b_megatron.sh actor_rollout_ref.actor.optim.lr=5e-7   # extra overrides
+#   TP=2 GEN_TP=2 bash launchers/qwen2_5_7b_megatron.sh \
+#       actor_rollout_ref.rollout.gpu_memory_utilization=0.55      # tuned: TP=2 (needs lower vLLM mem util)
 
 set -e
 source /apps/ku/intel_h200_gpu/miniconda/3/etc/profile.d/conda.sh
 conda activate verl
+
+# Run from verl/ root regardless of invocation cwd.
+cd "$(dirname "$(readlink -f "$0")")/.."
 
 # ---- local paths ----
 export HF_MODEL_PATH=${HF_MODEL_PATH:-/dpc/kuin0100/hang/Documents/models/Qwen/Qwen2.5-7B-Instruct}

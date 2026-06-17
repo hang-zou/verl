@@ -6,15 +6,18 @@
 #   - wandb logging (project: verl-test)
 #   - SMOKE_TEST toggle (defaults to 1 -> 5 steps, no save, no eval)
 #
-# Usage:
-#   bash run_qwen2_5_vl_7b_grpo.sh                          # smoke (5 steps)
-#   SMOKE_TEST=0 bash run_qwen2_5_vl_7b_grpo.sh             # full 15-epoch run
-#   EXP_NAME=my_run bash run_qwen2_5_vl_7b_grpo.sh          # custom wandb run name
-#   bash run_qwen2_5_vl_7b_grpo.sh actor_rollout_ref.actor.optim.lr=5e-7   # extra Hydra overrides
+# Usage (run from anywhere — script cd's to verl/ root):
+#   bash launchers/qwen2_5_vl_7b_fsdp.sh                          # smoke (5 steps)
+#   SMOKE_TEST=0 bash launchers/qwen2_5_vl_7b_fsdp.sh             # full 15-epoch run
+#   EXP_NAME=my_run bash launchers/qwen2_5_vl_7b_fsdp.sh          # custom wandb run name
+#   bash launchers/qwen2_5_vl_7b_fsdp.sh actor_rollout_ref.actor.optim.lr=5e-7   # extra Hydra overrides
 
 set -e
 source /apps/ku/intel_h200_gpu/miniconda/3/etc/profile.d/conda.sh
 conda activate verl
+
+# Run from verl/ root regardless of invocation cwd.
+cd "$(dirname "$(readlink -f "$0")")/.."
 
 # ---- local paths ----
 export MODEL_PATH=${MODEL_PATH:-/dpc/kuin0100/hang/Documents/models/Qwen/Qwen2.5-VL-7B-Instruct}
