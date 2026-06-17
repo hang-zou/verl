@@ -131,3 +131,7 @@ logs
 log
 outputs
 .history
+
+# TelecomLLM-local: training/install logs from local launcher scripts
+run_logs/
+install_logs/

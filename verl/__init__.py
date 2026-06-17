@@ -18,6 +18,11 @@ import os
 
 from packaging.version import parse as parse_version
 
+# TelecomLLM-local patches (see _telecomllm_patches.py). Must run BEFORE any
+# Megatron worker imports happen, so every Ray sub-process gets the patch on
+# `import verl`. Idempotent.
+from . import _telecomllm_patches  # noqa: F401
+
 from .protocol import DataProto
 from .utils.device import is_npu_available
 from .utils.import_utils import import_external_libs
