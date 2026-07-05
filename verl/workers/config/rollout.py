@@ -165,6 +165,11 @@ class RolloutConfig(BaseConfig):
     n: int = 1
     repetition_penalty: float = 1.0
 
+    # RFLM: optional per-token logit bias {token_id: bias} forwarded to the rollout
+    # sampler, e.g. to ban Qwen2.5-VL structural vision tokens (<|image_pad|> etc.)
+    # that an RL-explored policy can otherwise emit into text responses. None = no bias.
+    logit_bias: Optional[dict] = None
+
     # Early termination threshold for multi-turn rollout in sglang.
     # Abort remaining requests when (1 - over_sample_rate) * total_requests are completed.
     over_sample_rate: float = 0.0

@@ -502,6 +502,15 @@ class AgentLoopWorker:
             logprobs=config.calculate_log_probs,
         )
 
+        # RFLM: opt-in per-token logit bias (token_id -> bias). An RL-explored VL
+        # policy can sample structural image/vision tokens (e.g. <|image_pad|>) into
+        # its response, which then trips the actor's "Image features and image tokens
+        # do not match" consistency check. Set rollout.logit_bias to a large negative
+        # bias on those ids to ban them. Model-agnostic: no-op unless configured.
+        _logit_bias = getattr(config, "logit_bias", None)
+        if _logit_bias:
+            sampling_params["logit_bias"] = {int(k): float(v) for k, v in dict(_logit_bias).items()}
+
         def apply_greedy_sampling_params(params: dict[str, Any]) -> None:
             params["top_p"] = 1.0
             params["top_k"] = -1
