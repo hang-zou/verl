@@ -170,5 +170,26 @@ def main(config):
         run_ppo(config, task_runner_class=TaskRunner)
 
 
+# ---------------------------------------------------------------------------
+# RFLM fork compat: recipe modules (git submodule, tracks a newer verl) still
+# import `TaskRunner`, `create_rl_dataset`, and `create_rl_sampler` from this
+# module (e.g. recipe/dapo/main_dapo.py). This fork moved the classic
+# TaskRunner to main_ppo_v0 (where it is @ray.remote-decorated at definition)
+# and the dataset factories to verl.trainer.ppo.utils. Re-export them here so
+# recipe modules import cleanly inside RAY WORKERS too -- a driver-side
+# monkeypatch cannot fix workers, which re-import the recipe module from
+# source. TaskRunner is re-exported as the PLAIN class extracted from Ray's
+# actor metadata: recipes subclass it (Ray forbids inheriting from actor
+# classes) and apply their own ray.remote wrapper, which run_ppo's `.remote()`
+# call expects. main()'s v0 branch above is unaffected (it re-imports the
+# decorated class locally).
+from verl.trainer.ppo.utils import create_rl_dataset, create_rl_sampler  # noqa: E402,F401
+from verl.trainer.main_ppo_v0 import TaskRunner as _v0_actor_task_runner  # noqa: E402
+
+_v0_meta = getattr(_v0_actor_task_runner, "__ray_metadata__", None)
+_v0_modified = getattr(_v0_meta, "modified_class", None)
+TaskRunner = getattr(_v0_modified, "__ray_actor_class__", None) or _v0_actor_task_runner
+
+
 if __name__ == "__main__":
     main()
